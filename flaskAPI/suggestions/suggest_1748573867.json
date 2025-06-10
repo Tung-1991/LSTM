@@ -1,0 +1,7 @@
+{
+  "time": 1748573867,
+  "instance": "192.168.111.113:9100",
+  "metric": "cpu",
+  "value": 100.0,
+  "suggestion": "Cảm ơn về thông báo!\n\nVì máy 192.168.111.113:9100 đang ghi nhận giá trị CPU vượt beyond mức độ cho phép (100%) với mức độ seriousness là critical, tôi khuyên nên thực hiện các bước sau:\n\n1. **Khả năng ngay lập tức**:\n\t* Đóng ngay lập tức các ứng dụng và dịch vụ không thiết yếu trên máy 192.168.111.113 để giảm thiểu thiệt hại tiềm ẩn.\n\t* Kiểm tra logs của máy cho thấy có bất thường nào khác liên quan đến CPU cao hoặc lỗi hệ thống.\n2. **Khảo sát chi tiết**:\n\t* Đánh giá tình trạng health của các thành phần hạ tầng liên quan, bao gồm:\n\t\t+ Nhóm phân cứng (HDD/SSD) và controller\n\t\t+ Card mạng và switch\n\t\t+ nguồn điện và UPS\n\t* Kiểm tra logs của các hệ thống liên quan để tìm kiếm thông tin hữu ích về nguyên nhân gây ra vấn đề.\n3. **Khôi phục hệ thống**:\n\t* Nếu phát hiện ra lỗi hardware, hãy thực hiện các bước sau:\n\t\t+ Đóng máy ngay lập tức để tránh thiệt hại thêm\n\t\t+ Trực tiếp thay thế component bị hư hỏng\n\t\t+ Khởi động lại máy và kiểm tra tình trạng health mới\n\t* Nếu không thể xác định nguyên nhân, hãy liên hệ với đội ngũ support chuyên môn để nhận hỗ trợ bổ sung.\n4. **Thiết lập cảnh báo và phòng ngừa**:\n\t* Đặt cảnh báo cho các thành viên trong team về vấn đề này để có thể nhanh chóng phản ứng nếu xảy ra lại.\n\t* Review và review lại các quy trình và thủ tục hiện tại để tránh tình trạng này tái diễn.\n\nHãy让我 biết nếu có bất kỳ câu hỏi hoặc concerns nào!"
+}

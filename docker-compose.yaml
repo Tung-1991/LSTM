@@ -29,6 +29,8 @@ services:
       - ./flaskAPI:/app
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - /home/tungn/.ssh:/root/.ssh:ro
     working_dir: /app
     environment:
       - ALERTMANAGER_URL=http://192.168.111.111:9093/api/v1/alerts
+      - LLM_ENDPOINT=http://host.docker.internal:8000/v1/chat/completions
