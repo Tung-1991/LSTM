@@ -1,6 +1,6 @@
 # Bỏ qua log file
 app/monitoring_log.log
 flaskAPI/flask_alert.log
-
+flaskAPI/suggestions/*
 # Bỏ qua output ảnh anomaly
 app/outputs/
