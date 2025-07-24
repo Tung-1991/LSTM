@@ -1,11 +1,14 @@
 FROM python:3.10-slim
 
-WORKDIR /app
+# Cài đặt và cấu hình múi giờ GMT+7
+RUN apt-get update && apt-get install -y tzdata
+ENV TZ=Asia/Ho_Chi_Minh
+
+WORKDIR /logWatcher
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY log_watcher.py .
 
-# Chạy script khi container khởi động
 CMD ["python", "log_watcher.py"]

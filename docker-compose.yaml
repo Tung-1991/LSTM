@@ -1,11 +1,11 @@
 services:
-
   lstm-detector:
     build: ./app
     container_name: lstm-detector
     restart: always
     volumes:
       - ./app:/app
+      - ./app/monitoring_log.log:/app/monitoring_log.log
     environment:
       - PROMETHEUS_URL=http://192.168.111.111:9090
       - ALERT_ENDPOINT=http://alert-api:5001/alert
@@ -22,13 +22,17 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - ./flaskAPI:/app
-      - ./flaskAPI/ai_suggestions:/app/ai_suggestions  # ✅ SỬA ĐÚNG ĐƯỜNG DẪN
+      - ./flaskAPI:/flaskAPI
+      - ./flaskAPI/ai_suggestions:/flaskAPI/ai_suggestions
+      - ./flaskAPI/flask_alert.log:/flaskAPI/flask_alert.log
+      - /home/tungn/AIagent/data/rag_source:/rag_source:ro
     environment:
       - ALERTMANAGER_URL=http://192.168.111.111:9093/api/v1/alerts
-      - RAG_ENGINE_URL=http://host.docker.internal:5005/ask
+      - RAG_ENGINE_URL=http://172.27.119.158:5005/ask
       - ELK_URL=http://192.168.111.111:9200
-      - LOG_LEVEL=DEBUG
+      - PROMETHEUS_URL=http://192.168.111.111:9090
+      - SRE_AGENT_URL=http://sre-agent:5002
+      - LOG_LEVEL=INFO
     networks:
       - ai-monitoring-net
 
@@ -37,8 +41,8 @@ services:
     container_name: log-watcher
     restart: always
     volumes:
-      - ./logWatcher:/app
-      - ./logWatcher/log_watcher.log:/app/log_watcher.log
+      - ./logWatcher:/logWatcher
+      - ./logWatcher/archived_logs:/logWatcher/archived_logs
     environment:
       - ELK_URL=http://192.168.111.111:9200
       - ALERT_ENDPOINT=http://alert-api:5001/alert
@@ -47,6 +51,21 @@ services:
       - ai-monitoring-net
     depends_on:
       - alert-api
+
+  sre-agent:
+    build: ./sre_agent
+    container_name: sre-agent
+    restart: always
+    volumes:
+      - ./sre_agent:/sre_agent
+      - ./sre_agent/ssh_keys/id_rsa:/sre_agent/ssh_keys/id_rsa:ro
+    environment:
+      - SSH_USER=vagrant
+      - ANSIBLE_CONTROLLER_IP=192.168.111.111
+      - SSH_KEY_PATH=/sre_agent/ssh_keys/id_rsa
+      - LOG_LEVEL=INFO
+    networks:
+      - ai-monitoring-net
 
 networks:
   ai-monitoring-net:

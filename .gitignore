@@ -1,6 +1,14 @@
-# Bỏ qua log file
+# Log files
 app/monitoring_log.log
 flaskAPI/flask_alert.log
-flaskAPI/suggestions/*
-# Bỏ qua output ảnh anomaly
+logWatcher/log_watcher_cooldown.json
+sre_agent/logs/
+flaskAPI/ai_suggestions/
+flaskAPI/_gapo_preview.md
+# Output & model artifacts
 app/outputs/
+app/cooldown_cache.json
+app/models/
+
+# SSH keys
+sre_agent/ssh_keys/
