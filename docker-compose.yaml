@@ -5,7 +5,6 @@ services:
     restart: always
     volumes:
       - ./app:/app
-      - ./app/monitoring_log.log:/app/monitoring_log.log
     environment:
       - PROMETHEUS_URL=http://192.168.111.111:9090
       - ALERT_ENDPOINT=http://alert-api:5001/alert
@@ -22,16 +21,13 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - ./flaskAPI:/flaskAPI
-      - ./flaskAPI/ai_suggestions:/flaskAPI/ai_suggestions
-      - ./flaskAPI/flask_alert.log:/flaskAPI/flask_alert.log
-      - /home/tungn/AIagent/data/rag_source:/rag_source:ro
+      - ./flaskAPI:/app
+      - /home/tungn/AIagent/data/rag_processed:/rag_source:ro
     environment:
+      - RAG_API_URL=http://172.27.119.158:5005/ask
       - ALERTMANAGER_URL=http://192.168.111.111:9093/api/v1/alerts
-      - RAG_ENGINE_URL=http://172.27.119.158:5005/ask
       - ELK_URL=http://192.168.111.111:9200
-      - PROMETHEUS_URL=http://192.168.111.111:9090
-      - SRE_AGENT_URL=http://sre-agent:5002
+      - SRE_AGENT_URL=http://sre-agent:5002/execute
       - LOG_LEVEL=INFO
     networks:
       - ai-monitoring-net
@@ -41,12 +37,12 @@ services:
     container_name: log-watcher
     restart: always
     volumes:
-      - ./logWatcher:/logWatcher
-      - ./logWatcher/archived_logs:/logWatcher/archived_logs
+      - ./logWatcher:/app
     environment:
       - ELK_URL=http://192.168.111.111:9200
       - ALERT_ENDPOINT=http://alert-api:5001/alert
       - LOG_LEVEL=INFO
+      - LOG_WATCHER_KEYWORDS=error,timeout,denied,failed,exception,upstream timed out,refused
     networks:
       - ai-monitoring-net
     depends_on:
@@ -57,12 +53,12 @@ services:
     container_name: sre-agent
     restart: always
     volumes:
-      - ./sre_agent:/sre_agent
-      - ./sre_agent/ssh_keys/id_rsa:/sre_agent/ssh_keys/id_rsa:ro
+      - ./sre_agent:/app
+      - ./sre_agent/ssh_keys/id_rsa:/app/ssh_keys/id_rsa:ro
     environment:
       - SSH_USER=vagrant
       - ANSIBLE_CONTROLLER_IP=192.168.111.111
-      - SSH_KEY_PATH=/sre_agent/ssh_keys/id_rsa
+      - SSH_KEY_PATH=/app/ssh_keys/id_rsa
       - LOG_LEVEL=INFO
     networks:
       - ai-monitoring-net
@@ -70,3 +66,4 @@ services:
 networks:
   ai-monitoring-net:
     driver: bridge
+

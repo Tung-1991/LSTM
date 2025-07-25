@@ -17,7 +17,7 @@ echo "Clearing log files..."
 truncate -s 0 ./app/monitoring_log.log
 truncate -s 0 ./app/cooldown_cache.json
 truncate -s 0 ./flaskAPI/flask_alert.log
-truncate -s 0 ./flaskAPI/_gapo_preview.md
+#truncate -s 0 ./flaskAPI/_gapo_preview.md
 truncate -s 0 ./logWatcher/log_watcher_cooldown.json
 # Dọn dẹp Docker
 echo "Pruning Docker system..."
