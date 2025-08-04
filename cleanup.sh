@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Dừng và xóa các container đang chạy
-docker-compose down
+docker compose down
 
 # Xóa các file và thư mục được tạo ra trong quá trình chạy
 echo "Cleaning up generated files..."
@@ -11,7 +11,7 @@ rm -rf ./flaskAPI/ai_suggestions/*
 rm -rf ./flaskAPI/__pycache__
 rm -rf ./logWatcher/archived_logs/*
 rm -rf ./sre_agent/logs/*
-
+rm -rf ./flaskAPI/data/*
 # Xóa trắng nội dung file log nhưng giữ lại file
 echo "Clearing log files..."
 truncate -s 0 ./app/monitoring_log.log

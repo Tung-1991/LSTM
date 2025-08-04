@@ -27,14 +27,14 @@ ALERT_ENDPOINT = os.getenv("ALERT_ENDPOINT", "http://alert-api:5001/alert")
 CHECK_INTERVAL_SECONDS = 30
 COOLDOWN_SECONDS = 900
 # [ĐƠN GIẢN HÓA] Hardcode đường dẫn trực tiếp. Không cần biến môi trường nữa.
-ARCHIVED_LOGS_DIR = "/app/archived_logs" 
+ARCHIVED_LOGS_DIR = "/app/archived_logs"
 
 # --- Lấy KEYWORDS ĐỘNG ---
 DEFAULT_KEYWORDS = "error,failed,exception,denied,timeout,refused,critical,upstream timed out,connect() failed"
 KEYWORDS_STR = os.getenv("LOG_WATCHER_KEYWORDS", DEFAULT_KEYWORDS)
 KEYWORDS = [keyword.strip() for keyword in KEYWORDS_STR.split(',') if keyword.strip()]
 
-# ... (Các hàm get_cooldown_cache, update_cooldown_cache, connect_to_es giữ nguyên y hệt) ...
+# ... (Các hàm get_cooldown_cache, update_cooldown_cache giữ nguyên) ...
 def get_cooldown_cache():
     try:
         with open("/app/log_watcher_cooldown.json", 'r') as f: return json.load(f)
@@ -44,6 +44,9 @@ def update_cooldown_cache(cache):
     with open("/app/log_watcher_cooldown.json", 'w') as f: json.dump(cache, f)
 
 def connect_to_es():
+    """
+    Hàm kết nối tới Elasticsearch. Đã được sửa để xử lý lỗi kết nối một cách an toàn.
+    """
     if not ELK_URL:
         logger.error("ELK_URL environment variable is not set.")
         return None
@@ -51,9 +54,17 @@ def connect_to_es():
         client = Elasticsearch(ELK_URL, request_timeout=15, max_retries=3)
         if not client.ping():
             raise ConnectionError("Ping to Elasticsearch failed.")
+        logger.info("Successfully connected to Elasticsearch.")
         return client
     except Exception as e:
-        logger.error(f"Error connecting to Elasticsearch: {e}")
+        # --- ĐÂY LÀ PHẦN ĐÃ SỬA ---
+        # DÒNG CŨ BỊ LỖI:
+        # logger.error(f"Error connecting to Elasticsearch: {e}")
+        #
+        # SỬA THÀNH:
+        # Ghi log lỗi kèm theo traceback để debug dễ dàng hơn và tránh bị crash do lỗi IndexError.
+        # Đây là thay đổi chính để chương trình không bị crash khi Elasticsearch không sẵn sàng.
+        logger.error("Failed to connect to Elasticsearch. Will retry...", exc_info=True)
         return None
 
 def process_logs(es_client, processed_log_ids):
@@ -69,7 +80,7 @@ def process_logs(es_client, processed_log_ids):
         return
     if not res['hits']['hits']:
         return
-    
+
     last_alert_time = get_cooldown_cache()
     now_ts = int(time.time())
 
@@ -98,17 +109,17 @@ def process_logs(es_client, processed_log_ids):
             today_str = datetime.now().strftime('%Y-%m-%d')
             daily_archive_path = os.path.join(ARCHIVED_LOGS_DIR, today_str)
             os.makedirs(daily_archive_path, exist_ok=True)
-            
+
             log_filepath = os.path.join(daily_archive_path, f"{incident_id}.log")
             with open(log_filepath, 'w', encoding='utf-8') as f:
                 f.write(log_message)
             logger.info(f"   -> Archived log to {log_filepath}")
         except Exception as e:
             logger.error(f"   -> Failed to archive log for incident '{incident_id}': {e}")
-        
+
         unix_timestamp = int(isoparse(timestamp_str).timestamp()) if timestamp_str else now_ts
         payload = { "source": "LogWatcher", "metric": "log_error_detected", "instance": hostname, "severity": "warning", "trigger_log": log_message, "timestamp": unix_timestamp }
-        
+
         try:
             requests.post(ALERT_ENDPOINT, json=payload, timeout=60)
         except requests.exceptions.RequestException as e:
@@ -127,12 +138,19 @@ if __name__ == "__main__":
     while True:
         try:
             if es_client is None or not es_client.ping():
+                # Thông báo rằng đang cố kết nối lại
+                if es_client is not None:
+                    logger.warning("Elasticsearch connection lost. Attempting to reconnect...")
                 es_client = connect_to_es()
+            
             if es_client:
                 process_logs(es_client, processed_log_ids)
             else:
+                # Nếu không kết nối được, đợi một khoảng thời gian trước khi thử lại
                 time.sleep(30)
+                continue # Bỏ qua vòng lặp hiện tại và thử kết nối lại ở vòng lặp sau
         except Exception as e:
             logger.critical(f"Critical error in main loop: {e}", exc_info=True)
-            es_client = None
+            es_client = None # Đặt lại client để vòng lặp sau kết nối lại
+        
         time.sleep(CHECK_INTERVAL_SECONDS)

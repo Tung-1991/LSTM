@@ -1,14 +1,36 @@
-# Log files
+# === LOG FILES ===
 app/monitoring_log.log
 flaskAPI/flask_alert.log
 logWatcher/log_watcher_cooldown.json
 sre_agent/logs/
 flaskAPI/ai_suggestions/
 flaskAPI/_gapo_preview.md
-# Output & model artifacts
+
+# === OUTPUT & MODEL ARTIFACTS ===
 app/outputs/
 app/cooldown_cache.json
 app/models/
 
-# SSH keys
+# === SSH KEYS ===
 sre_agent/ssh_keys/
+
+# === PYTHON CACHE & TEMP FILES ===
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# === FLASKAPI EXCLUDES ===
+flaskAPI/__pycache__/
+flaskAPI/data/
+flaskAPI/memory.py
+
+# === LOGWATCHER EXCLUDES ===
+logWatcher/archived_logs/
+
+# === TEMPORARY DOCKER TAR FILES ===
+*.tar*
+!.tar.gz
+.tmp-*.tar*
+
+

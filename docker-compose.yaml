@@ -23,6 +23,7 @@ services:
     volumes:
       - ./flaskAPI:/app
       - /home/tungn/AIagent/data/rag_processed:/rag_source:ro
+      - ./flaskAPI/data:/app/data
     environment:
       - RAG_API_URL=http://172.27.119.158:5005/ask
       - ALERTMANAGER_URL=http://192.168.111.111:9093/api/v1/alerts
